@@ -14,6 +14,9 @@ inputs:
     description: 'ECR image tag. Defaults to latest'
     required: true
     default: 'latest'
+  ecs-cluster:
+    description: 'The name of the ECS cluster'
+    required: true
   ecs-service:
     description: 'ECS service name'
     required: true
@@ -29,5 +32,5 @@ runs:
       shell: bash
     - name : Force new AWS ECS deployment
       run: |
-        aws ecs update-service --cluster default --service ${{ inputs.ecs-service }} --force-new-deployment
+        aws ecs update-service --cluster {{ inputs.ecs-cluster }} --service ${{ inputs.ecs-service }} --force-new-deployment
       shell: bash
