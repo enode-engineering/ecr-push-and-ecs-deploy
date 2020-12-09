@@ -32,5 +32,5 @@ runs:
       shell: bash
     - name : Force new AWS ECS deployment
       run: |
-        aws ecs update-service --cluster {{ inputs.ecs-cluster }} --service ${{ inputs.ecs-service }} --force-new-deployment
+        aws ecs update-service --cluster ${{ inputs.ecs-cluster }} --service ${{ inputs.ecs-service }} --force-new-deployment
       shell: bash
