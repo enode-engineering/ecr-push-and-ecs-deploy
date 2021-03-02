@@ -48,6 +48,7 @@ runs:
 
     - name : Force new AWS ECS deployment
       id: ecs-deploy
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       shell: bash
       run: |
         aws ecs update-service --cluster ${{ inputs.ecs-cluster }} --service ${{ inputs.ecs-service }} --force-new-deployment
