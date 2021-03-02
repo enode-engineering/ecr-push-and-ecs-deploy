@@ -23,14 +23,31 @@ inputs:
 runs:
   using: "composite"
   steps: 
-    - name: Build, tag, push to AWS ECR
+    - name: Build
       id: build
-      run: |
-        docker build -t ${{ inputs.ecr-registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }} .
-        docker push ${{ inputs.ecr-registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }}
-        echo "::set-output name=image::${{ inputs.ecr-registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }}"
       shell: bash
+      run: docker build -t ${{ inputs.ecr-registry }}/${{ inputs.ecr-repository }} .
+
+    - name: Tag with SHA
+      id: tag-with-input
+      shell: bash
+      run: docker tag ${{ inputs.ecr-registry }}/${{ inputs.ecr-repository }} ${{ inputs.ecr-registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }}
+
+    - name: Tag with latest
+      id: tag-latest
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      shell: bash
+      run: docker tag ${{ inputs.ecr-registry }}/${{ inputs.ecr-repository }} ${{ inputs.ecr-registry }}/${{ inputs.ecr-repository }}:latest
+
+    - name: Push to AWS ECR
+      id: push-to-ecr
+      shell: bash
+      run: |
+        docker push ${{ inputs.ecr-registry }}/${{ inputs.ecr-repository }} --all-tags
+        echo "::set-output name=image::${{ inputs.ecr-registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }}"
+
     - name : Force new AWS ECS deployment
+      id: ecs-deploy
+      shell: bash
       run: |
         aws ecs update-service --cluster ${{ inputs.ecs-cluster }} --service ${{ inputs.ecs-service }} --force-new-deployment
-      shell: bash
